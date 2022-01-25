@@ -1,0 +1,120 @@
+
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h> 
+LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display 
+#define in 8 //for in IR sensor 
+#define out 9 //for out IR sensor 
+#define fan 10 // for fan output 
+#define led 13 
+int count = 0; //for counting the number of person in the room 
+void setup() 
+{ 
+lcd.begin(16, 2); //16X2 LCD(16 column and 2 rows) 
+lcd.backlight(); 
+lcd.print("Visitor Counter"); //to initially print on LCD 
+delay(1000); //to produce delay of 1 sec 
+pinMode(in, INPUT); //input value stored in “in” variable 
+pinMode(out, INPUT); //output value stored in “out” variable 
+pinMode(fan, OUTPUT); //output value stored in “fan” variable 
+pinMode(led, OUTPUT); 
+lcd.clear(); //empty the LCD screen 
+lcd.print("Person In Room:"); //printing 
+lcd.setCursor(1, 1); //to move cursor in next line 
+lcd.print(count); // the value of count is printed 
+} 
+void loop() //Processing work 
+ 
+{ 
+int in_value = digitalRead(in); 
+//to get the value from IN IR sensor 
+int out_value = digitalRead(out); 
+//to get the value from OUT IR sensor 
+ 
+if (in_value == LOW) 
+//if person enters the room 
+{ 
+count++; 
+//increases the count 
+lcd.clear(); 
+//clear the lcd 24 
+
+lcd.print("Person In Room:"); 
+//printing 
+lcd.setCursor(0, 1); 
+//to make cursor go to next line 
+lcd.print(count); //display the count 
+delay(1000); //to produce 1 sec delay 
+} 
+else if (out_value == LOW) //if person exits 
+{ 
+count--; //decreasing count 
+if (count > 0) //if there exist any person in the room 
+{ 
+lcd.clear(); //printing the number of person 
+lcd.print("Person In Room:"); 
+lcd.setCursor(0, 1); 
+lcd.print(count); 
+delay(1000); 
+} 
+else //but if there exist nobody in the room 
+{ 
+count = 0; 
+lcd.clear(); //clear the LCD 
+lcd.print("Nobody In Room"); //printing 
+digitalWrite(fan, LOW); //switch of the fan 
+lcd.setCursor(0, 1); 
+lcd.print("0"); //displaying number 0 
+delay(1000); //to produce delay of 1 sec 
+} 
+} 
+else if (in_value == HIGH && out_value == HIGH && count <= 0) 
+//when no one enters or exits and count is 0 
+{ 
+lcd.clear(); //clearing the LCD 
+digitalWrite(fan, LOW); 
+lcd.clear(); 
+//switch off the fan 
+lcd.print("Nobody In Room"); 
+//printing 25 
+
+lcd.setCursor(0, 1); 
+lcd.print("Fan is Off"); 
+// fan is off 
+delay(200); 
+//producing 0.2 sec delay 
+} 
+else if (count > 5) //if there exist any person in the room 
+{ 
+lcd.clear(); 
+lcd.print("Maximum Capacity"); 
+lcd.setCursor(0, 1); 
+lcd.print("Reached!!"); 
+digitalWrite(led, HIGH); 
+digitalWrite(fan, HIGH); 
+delay(1000); 
+} 
+else if (count <= 5) //if there exist any person in the room 
+{ 
+digitalWrite(fan, HIGH); 
+digitalWrite(led, LOW); 
+delay(1000); 
+} 
+else if (true) //if no one enters and no one exits but there is someone present in the room 
+{ 
+digitalWrite(fan, HIGH); 
+//switch on the fan 
+} 
+else if (out_value == LOW) //if out detected then reduce count value 
+{ 
+count--; 
+lcd.clear(); 
+digitalWrite(fan, HIGH); //switch on the fan 
+lcd.print("Person in room:"); //displaying person in room 
+lcd.setCursor(0, 1); 
+lcd.print(count); 
+delay(1000); //producing 1 sec delay 
+} 
+else 
+{ 
+digitalWrite(fan, HIGH); //switch on the fan 
+}
